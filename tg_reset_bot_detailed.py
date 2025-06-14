@@ -5,25 +5,25 @@ from datetime import datetime
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
-# --- Logging ---
+# --- Logging Setup ---
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# --- Your Bot Token (hardcoded) ---
+# --- Bot Token ---
 BOT_TOKEN = '7783040596:AAGseC6xwxmMhIj5Vekh7tIkimivMVXYlbg'
 
-# --- Markdown Escaping Helper ---
+# --- MarkdownV2 Escape Function ---
 def escape(text: str) -> str:
     return re.sub(r'([_*\[\]()~`>#+\-=|{}.!])', r'\\\1', text)
 
-# --- Extract Masked Email from HTML ---
+# --- Email Mask Extraction from HTML ---
 def extract_email(text: str) -> str:
     m = re.search('<b>(.*?)</b>', text)
     return m.group(1) if m else "Unknown"
 
-# --- Make Reset Request to Instagram ---
+# --- Instagram Password Reset Request ---
 def send_reset_request(username: str):
     try:
         response = requests.post(
@@ -42,11 +42,11 @@ def send_reset_request(username: str):
     except Exception as e:
         return False, str(e)
 
-# --- Handle /start Command ---
+# --- /start Command Handler ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📩 Send me an Instagram username or email to attempt a reset.")
 
-# --- Handle Text Messages (Username Input) ---
+# --- Main Handler for Messages ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     username_input = update.message.text.strip()
@@ -80,7 +80,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(f"❌ Failed: {result}")
 
-# --- Main Bot Function ---
+# --- Main Execution ---
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
@@ -89,6 +89,5 @@ def main():
     logging.info("🤖 Bot is running...")
     app.run_polling()
 
-# --- Run It ---
 if __name__ == "__main__":
     main()
