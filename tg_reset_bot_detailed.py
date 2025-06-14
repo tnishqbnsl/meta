@@ -5,20 +5,25 @@ from datetime import datetime
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 
+# --- Logging Setup ---
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
+# --- Bot Token ---
 BOT_TOKEN = '7783040596:AAGseC6xwxmMhIj5Vekh7tIkimivMVXYlbg'
 
+# --- MarkdownV2 Escape Function ---
 def escape(text: str) -> str:
     return re.sub(r'([_*\[\]()~`>#+\-=|{}.!])', r'\\\1', text)
 
+# --- Email Mask Extraction from HTML ---
 def extract_email(text: str) -> str:
     m = re.search('<b>(.*?)</b>', text)
     return m.group(1) if m else "Unknown"
 
+# --- Instagram Password Reset Request ---
 def send_reset_request(username: str):
     try:
         response = requests.post(
@@ -37,9 +42,11 @@ def send_reset_request(username: str):
     except Exception as e:
         return False, str(e)
 
+# --- /start Command Handler ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("📩 Send me an Instagram username or email to attempt a reset.")
 
+# --- Main Handler for Messages ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     username_input = update.message.text.strip()
@@ -52,28 +59,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if success:
         caption = (
-            f"{escape('📗 *Instagram Reset Request Sent Successfully*')}
-
-"
-            f"{escape('🧑‍💻 *User:*')} [@{escape(telegram_username)}](https://t.me/{escape(telegram_username)})
-"
-            f"{escape('📌 *Target Username:*')} `{escape(username_input)}`
-"
-            f"{escape('📒 *Masked Email:*')} `{escape(result)}`
-"
-            f"{escape('🕒 *Requested At:*')} {escape(time_now)}
-"
-            f"{escape('🌐 *Origin:*')} Telegram Bot
-"
-            f"{escape('📍 *Bot Name:*')} @{escape(context.bot.username)}
-
-"
-            f"{escape('✅ *Password reset link sent!*')}
-
-"
-            f"{escape('🔒 *Note:*')} {escape('Check the inbox & spam folder of the email above.')}
-
-"
+            f"{escape('📗 *Instagram Reset Request Sent Successfully*')}\n\n"
+            f"{escape('🧑‍💻 *User:*')} [@{escape(telegram_username)}](https://t.me/{escape(telegram_username)})\n"
+            f"{escape('📌 *Target Username:*')} `{escape(username_input)}`\n"
+            f"{escape('📒 *Masked Email:*')} `{escape(result)}`\n"
+            f"{escape('🕒 *Requested At:*')} {escape(time_now)}\n"
+            f"{escape('🌐 *Origin:*')} Telegram Bot\n"
+            f"{escape('📍 *Bot Name:*')} @{escape(context.bot.username)}\n\n"
+            f"{escape('✅ *Password reset link sent!*')}\n\n"
+            f"{escape('🔒 *Note:*')} {escape('Check the inbox & spam folder of the email above.')}\n\n"
             f"{escape('🛡️ This request was triggered via Telegram bot for testing or account access help.')}"
         )
 
@@ -86,6 +80,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(f"❌ Failed: {result}")
 
+# --- Main Execution ---
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
